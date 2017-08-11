@@ -6,6 +6,8 @@ debugMode = False
 if os.getenv("APP_DEBUG") == "true":
     debugMode = True
 
+port = int(os.getenv("APP_PORT", "80"))
+
 app = Flask(__name__)
 
 def table_check():
@@ -88,4 +90,4 @@ def redirect_short_url(url_key):
 
 if __name__ == '__main__':
     table_check()
-    app.run(debug=debugMode)
+    app.run(host='0.0.0.0', debug=debugMode, port=port)
