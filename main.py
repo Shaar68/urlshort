@@ -90,7 +90,7 @@ def redirect_short_url(url_key):
 
 @app.route('/')
 def home():
-    return 'Aetea\' little url shortener: <a href="https://github.com/aetea/urlshort">GitHub</a>'
+    return 'Aetea\'s little url shortener: <a href="https://github.com/aetea/urlshort">GitHub</a>'
 
 if __name__ == '__main__':
     table_check()
