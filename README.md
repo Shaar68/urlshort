@@ -9,6 +9,7 @@ I strongly recommend that you make a volume for for the URL database (`/app/urls
 ## Environment Variables
 - APP_PORT the port to run the HTTP web server on.
 - APP_DEBUG set to 'true' (without quotes) if you want to enable debug mode.
+- APP_BASE_URL base url for short url. 
 
 ## To install and run.
 ### With docker and docker-compose

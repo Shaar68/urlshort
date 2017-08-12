@@ -1,12 +1,16 @@
 from flask import Flask, request, redirect, jsonify
-import sqlite3, urllib3
+import sqlite3
+import urllib3
+import uuid
 import os
+import aetea_base as base
 
 debugMode = False
 if os.getenv("APP_DEBUG") == "true":
     debugMode = True
 
 port = int(os.getenv("APP_PORT", "80"))
+base_url = os.getenv("APP_BASE_URL")
 
 app = Flask(__name__)
 
@@ -18,6 +22,23 @@ def table_check():
             c.execute("CREATE TABLE API_KEYS (KEY TEXT NOT NULL);")
         except sqlite3.OperationalError:
             pass
+
+def create_new_url(orig_url, key=None):
+    if key is None:
+        key = base.encode(uuid.uuid4().int)[:8]
+
+    with sqlite3.connect('urls.db') as conn:
+        c = conn.cursor()
+        
+        result_cursor = c.execute('SELECT KEY FROM WEB_URL WHERE KEY=?', (key,))
+
+        if len(result_cursor.fetchall()) > 0:
+            return (False, None)
+            
+        result_cursor = c.execute('INSERT INTO WEB_URL (URL, KEY) VALUES (?, ?)', (orig_url, key))
+        return (True, key)
+        
+    return (False, None)
 
 def check_api_key(body):
     if 'api_key' not in body:
@@ -41,17 +62,11 @@ def create_url():
     if not check_api_key(body):
         return 'error'
 
-    with sqlite3.connect('urls.db') as conn:
-        c = conn.cursor()
-            
-        result_cursor = c.execute('SELECT KEY FROM WEB_URL WHERE KEY=?', (url_key,))
-
-        if len(result_cursor.fetchall()) > 0:
-            return 'error: url already exists'
-            
-        result_cursor = c.execute('INSERT INTO WEB_URL (URL, KEY) VALUES (?, ?)', (orig_url, url_key))
+    status = create_new_url(orig_url, key=url_key)
+    
+    if status is True:
         return url_key
-        
+
     return 'error'
 
 @app.route('/update', methods=['POST'])
@@ -87,6 +102,26 @@ def redirect_short_url(url_key):
             print(e)
             return 'error'
     return redirect(redirect_url)
+
+@app.route('/new')
+def new_url_random():
+    orig_url = request.args.get('url')
+
+    with sqlite3.connect('urls.db') as conn:
+        c = conn.cursor()
+        
+        result_cursor = c.execute('SELECT KEY FROM WEB_URL WHERE URL=?', (orig_url,))
+
+        fetched = result_cursor.fetchall()
+        if len(fetched) > 0:
+            return base_url + fetched[0][0]
+        
+        status, key = create_new_url(orig_url)
+
+        if status is True:
+            return base_url + key
+            
+        return 'error'
 
 @app.route('/')
 def home():
