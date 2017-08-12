@@ -88,6 +88,10 @@ def redirect_short_url(url_key):
             return 'error'
     return redirect(redirect_url)
 
+@app.route('/')
+def home():
+    return 'Aetea\' little url shortener: <a href="https://github.com/aetea/urlshort">GitHub</a>'
+
 if __name__ == '__main__':
     table_check()
     app.run(host='0.0.0.0', debug=debugMode, port=port)
