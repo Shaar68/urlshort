@@ -1,0 +1,10 @@
+version: '2'
+services:
+  urlshort:
+    image: aetea/urlshort:latest
+    ports:
+      - "80:80" # Expose the port
+    environment:
+      - "APP_PORT=80" # Set port for the web server. (Default is 80)
+    volumes:
+      - /mnt/data/urlshort/urls.db:/app/urls.db # Set the location for the SQLite3 database.
